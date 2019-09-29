@@ -19,7 +19,7 @@ def get_prediction(w,w0,x_df):
     
 def gradient_descend(df, lam, gamma, terms_num, max_iter):
     df=df.reset_index(drop=True)
-    w=np.array([0]*(df.shape[1]-1), dtype=float) #one column is the target
+    w=np.random.rand(df.shape[1]-1)#np.array([0]*(df.shape[1]-1), dtype=float) #one column is the target
     w0=0.0
     prediction=get_prediction(w,w0,df.iloc[:,:-1])
     minRMSE=metrics.custom_RMSE(df['target'], prediction, gamma, w)
