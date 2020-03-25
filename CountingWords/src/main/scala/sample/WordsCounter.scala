@@ -1,7 +1,8 @@
 package sample
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkConf
-import scala.collection.immutable.ListMap
+import org.apache.spark.sql.SparkSession
+
 
 object WordsCounter {
   def main(args: Array[String]): Unit = {
@@ -14,8 +15,13 @@ object WordsCounter {
 
     val rddFromFile = sc.textFile("data/ml_part.txt")
 
-    val res = rddFromFile.map(line => line.split(" ")).flatMap(word => word).map(word => word.toLowerCase).countByValue( ).toSeq.sortWith(_._2 > _._2).slice(0,100)
-    val rddRes = sc.parallelize(res.toSeq)
-    rddRes.coalesce(1).saveAsTextFile("data/ml_part_res")
+    val res = rddFromFile.flatMap(line => line.split(" ")).map(word => word.toLowerCase)
+    val res2 = res.map(x => (x, 1L)).reduceByKey(_ + _).sortBy(_._2,false)
+
+    val spark = SparkSession.builder.config(conf).getOrCreate()
+    val df = spark.createDataFrame(res2).toDF("word", "amount")
+    val res3 = df.limit(100)
+
+    res3.write.format("csv").save("data/ml_part_res")
   }
 }
